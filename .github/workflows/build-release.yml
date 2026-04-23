@@ -29,41 +29,27 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      # PERBAIKAN: Gunakan find untuk mencari folder android di mana pun posisinya
       - name: Create local.properties
         run: |
-          ANDROID_PATH=$(find . -name "android" -type d -not -path "*/.*" | head -n 1)
-          if [ -z "$ANDROID_PATH" ]; then
-            echo "Folder android tidak ditemukan!"
-            exit 1
-          fi
-          echo "Folder ditemukan di: $ANDROID_PATH"
-          echo "flutter.sdk=$FLUTTER_ROOT" > "$ANDROID_PATH/local.properties"
+          mkdir -p VaultX/android
+          echo "flutter.sdk=$FLUTTER_ROOT" > VaultX/android/local.properties
         shell: bash
 
       - name: Install Dependencies
-        run: |
-          PUBSPEC_PATH=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1)
-          WORKDIR=$(dirname "$PUBSPEC_PATH")
-          echo "Menjalankan pub get di: $WORKDIR"
-          cd "$WORKDIR"
-          flutter pub get
+        working-directory: VaultX
+        run: flutter pub get
 
       - name: Build Release APK
-        run: |
-          PUBSPEC_PATH=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1)
-          WORKDIR=$(dirname "$PUBSPEC_PATH")
-          cd "$WORKDIR"
-          flutter build apk --release
+        working-directory: VaultX
+        run: flutter build apk --release
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # Mencari file APK secara otomatis di folder build mana pun
-          files: "**/build/app/outputs/flutter-apk/app-release.apk"
-          tag_name: "v1.1.${{ github.run_number }}"
+          files: "VaultX/build/app/outputs/flutter-apk/app-release.apk"
+          tag_name: "v1.2.${{ github.run_number }}"
           name: "VaultX Native Update (Build ${{ github.run_number }})"
-          body: "🚀 Build sukses! Path otomatis terdeteksi."
+          body: "🚀 Build sukses! File MainActivity.kt telah dibersihkan dari kode Gradle."
           draft: false
           prerelease: false
         env:
