@@ -1,4 +1,4 @@
-name: Build Native Flutter APK (Artifact Only)
+name: Build VaultX (Artifact Only)
 
 on:
   push:
@@ -28,30 +28,26 @@ jobs:
 
       - name: Create local.properties
         run: |
-          # Mencari folder android secara dinamis dan membuat local.properties
           ANDROID_PATH=$(find . -name "android" -type d -not -path "*/.*" | head -n 1)
           echo "flutter.sdk=$FLUTTER_ROOT" > "$ANDROID_PATH/local.properties"
         shell: bash
 
       - name: Install Dependencies
         run: |
-          # Mencari pubspec.yaml secara dinamis
           WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
           cd "$WORKDIR"
           flutter pub get
 
       - name: Build Release APK
         run: |
-          # Mencari pubspec.yaml secara dinamis dan build
           WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
           cd "$WORKDIR"
           flutter build apk --release --no-tree-shake-icons
 
-      # PERBAIKAN UTAMA: Menggunakan wildcard untuk mencari file APK
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VaultX-Pro-APK
+          name: VaultX-Build
           path: "**/build/app/outputs/flutter-apk/app-release.apk"
-          if-no-files-found: error # Akan error jika tetap tidak ketemu
-          retention-days: 7
+          if-no-files-found: error
+          retention-days: 5
