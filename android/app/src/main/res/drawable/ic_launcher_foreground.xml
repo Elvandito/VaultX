@@ -3,10 +3,14 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Blue Flutter Logo Shape -->
     <path
-        android:fillColor="#818CF8"
-        android:pathData="M54,22L28,34v22c0,16.2 11.1,31.3 26,35 14.9,-3.7 26,-18.8 26,-35V34L54,22z"/>
+        android:fillColor="#40D0FD"
+        android:pathData="M59.3,54.1l23.5,-23.5H59.3L35.8,54.1l23.5,23.5h23.5L59.3,54.1z" />
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,34L36,42v14c0,11.2 7.7,21.7 18,24c10.3,-2.3 18,-12.8 18,-24V42L54,34zM54,39L64,44v12c0,7.5 -5.1,14.4 -10,16c-4.9,-1.6 -10,-8.5 -10,-16V44L54,39z"/>
+        android:fillColor="#02539A"
+        android:pathData="M59.3,81.1l11.7,11.7h23.5l-23.5,-23.5L59.3,81.1z" />
+    <path
+        android:fillColor="#40D0FD"
+        android:pathData="M59.3,27.1l11.7,-11.7H47.6L24.1,38.9l11.7,11.7L59.3,27.1z" />
 </vector>
