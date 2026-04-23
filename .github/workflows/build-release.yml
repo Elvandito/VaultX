@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+# TAMBAHKAN PERMISSIONS INI UNTUK MEMPERBAIKI ERROR 403
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     name: Build & Release
@@ -26,15 +30,28 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      # Langkah KRUSIAL untuk memperbaiki error 1927
       - name: Create local.properties
-        run: |
-          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-        shell: bash
+        run: echo "flutter.sdk=$FLUTTER_ROOT" > VaultX/android/local.properties
 
       - name: Install Dependencies
+        working-directory: VaultX
         run: flutter pub get
 
+      - name: Build Release APK
+        working-directory: VaultX
+        run: flutter build apk --release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: VaultX/build/app/outputs/flutter-apk/app-release.apk
+          tag_name: "v1.1.${{ github.run_number }}"
+          name: "VaultX Native Update (Build ${{ github.run_number }})"
+          body: "🚀 Build sukses dengan perbaikan izin 403 dan stabilitas aplikasi."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CLASSIC }}
       - name: Build Release APK
         run: flutter build apk --release
 
