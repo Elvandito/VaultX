@@ -1,0 +1,47 @@
+name: Build VaultX Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2. Setup Java Environment (Required for Android build)
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      # 3. Setup Flutter SDK
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0' # Menggunakan versi stabil terbaru
+          channel: 'stable'
+          
+      # 4. Install dependencies
+      - name: Install Dependencies
+        run: flutter pub get
+        
+      # 5. Build Android Release APK
+      - name: Build APK
+        run: flutter build apk --release
+      
+      # 6. Upload the generated APK as a workflow artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: VaultX-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
