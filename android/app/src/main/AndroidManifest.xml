@@ -2,7 +2,7 @@
     <application
         android:label="VaultX"
         android:name="${applicationName}"
-        android:icon="@drawable/ic_launcher"> <!-- Berubah dari @mipmap ke @drawable -->
+        android:icon="@mipmap/ic_launcher"> <!-- Pastikan ini @mipmap -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
