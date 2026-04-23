@@ -1,47 +1,58 @@
-name: Build VaultX Android APK
+name: Build & Release Native Flutter APK
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ "main" ] # Berjalan otomatis saat ada push ke branch main
+  workflow_dispatch:     # Tombol untuk menjalankan build secara manual
 
 jobs:
-  build:
-    name: Build APK
+  build-and-release:
+    name: Build & Release
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository code
+      # 1. Checkout kode dari repositori GitHub (Update ke v4)
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # 2. Setup Java Environment (Required for Android build)
+      # 2. Setup Java (Update ke v4)
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      
+
       # 3. Setup Flutter SDK
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0' # Menggunakan versi stabil terbaru
+          flutter-version: '3.19.0' # Versi stabil Flutter
           channel: 'stable'
-          
-      # 4. Install dependencies
+
+      # 4. Install Dependencies
       - name: Install Dependencies
         run: flutter pub get
-        
-      # 5. Build Android Release APK
-      - name: Build APK
+
+      # 5. Build APK Native Android
+      - name: Build Release APK
         run: flutter build apk --release
-      
-      # 6. Upload the generated APK as a workflow artifact
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+
+      # 6. Upload APK sebagai Artifact (Update ke v4)
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: VaultX-APK
+          name: VaultX-Native-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      # 7. Otomatis Membuat Rilis di GitHub (Update ke v2 untuk keamanan Node terbaru)
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          tag_name: "v1.0.${{ github.run_number }}"
+          name: "VaultX Native Update (Build ${{ github.run_number }})"
+          body: "🚀 Auto-generated Fully Native (Flutter) APK build."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CLASSIC }}
