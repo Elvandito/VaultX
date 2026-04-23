@@ -19,12 +19,25 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+          cache: 'gradle' # Mengaktifkan cache otomatis untuk Gradle
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.0'
           channel: 'stable'
+          cache: true # Mengaktifkan cache otomatis untuk Flutter SDK
+
+      # Cache pub dependencies untuk mempercepat build & mengurangi resiko timeout
+      - name: Cache Pub Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            **/build
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
 
       - name: Create local.properties
         run: |
@@ -38,11 +51,15 @@ jobs:
           cd "$WORKDIR"
           flutter pub get
 
+      # Build dengan Retry Logic jika terjadi Network Timeout
       - name: Build Release APK
         run: |
           WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
           cd "$WORKDIR"
-          flutter build apk --release --no-tree-shake-icons
+          # Mencoba build hingga 3 kali jika gagal karena masalah jaringan
+          for i in {1..3}; do
+            flutter build apk --release --no-tree-shake-icons && break || sleep 15;
+          done
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
