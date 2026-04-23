@@ -23,7 +23,7 @@ class AppTheme {
   static const Color bg = CupertinoColors.black;
   static const Color surface = Color(0xFF1C1C1E);
   static const Color border = Color(0xFF2C2C2E);
-  static const Color textMuted = CupertinoColors.systemGrey; // FIXED: Added missing member
+  static const Color textMuted = CupertinoColors.systemGrey;
 
   static CupertinoThemeData get iosTheme => const CupertinoThemeData(
     brightness: Brightness.dark,
@@ -285,7 +285,7 @@ class _ItemTileState extends State<_ItemTile> {
   IconData _getTypeIcon(String t) {
     switch(t) {
       case 'pass': return CupertinoIcons.lock_fill;
-      case 'key': return CupertinoIcons.key_fill;
+      case 'key': return CupertinoIcons.key; // FIXED: key_fill changed to key
       case 'note': return CupertinoIcons.doc_text_fill;
       case 'card': return CupertinoIcons.creditcard_fill;
       case 'wifi': return CupertinoIcons.wifi;
