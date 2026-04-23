@@ -1,24 +1,12 @@
 plugins {
     id "com.android.application"
+    id "org.jetbrains.kotlin.android"
     id "dev.flutter.flutter-gradle-plugin"
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withInputStream { stream ->
-        localProperties.load(stream)
-    }
 }
 
 android {
     namespace "com.elvandito.vaultx"
     compileSdk 34
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
 
     defaultConfig {
         applicationId "com.elvandito.vaultx"
@@ -35,8 +23,13 @@ android {
             shrinkResources false
         }
     }
-}
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 
-flutter {
-    source '../..'
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
