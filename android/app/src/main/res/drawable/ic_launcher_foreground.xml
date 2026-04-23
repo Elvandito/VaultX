@@ -3,7 +3,6 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Blue Flutter Logo Shape -->
     <path
         android:fillColor="#40D0FD"
         android:pathData="M59.3,54.1l23.5,-23.5H59.3L35.8,54.1l23.5,23.5h23.5L59.3,54.1z" />
