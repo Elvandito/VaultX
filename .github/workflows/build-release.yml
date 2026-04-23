@@ -1,16 +1,13 @@
-name: Build & Release Native Flutter APK
+name: Build Native Flutter APK (Artifact Only)
 
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build-and-release:
-    name: Build & Release
+  build:
+    name: Build APK
     runs-on: ubuntu-latest
 
     steps:
@@ -43,22 +40,10 @@ jobs:
         working-directory: VaultX
         run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      # Mengunggah hasil build sebagai Artifact (Bisa didownload di tab Actions)
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          # This wildcard ensures it finds the APK even if paths differ slightly
-          files: "VaultX/build/app/outputs/flutter-apk/app-release.apk"
-          tag_name: "v1.2.${{ github.run_number }}"
-          name: "VaultX Pro Update (Build ${{ github.run_number }})"
-          body: |
-            🚀 **VaultX Pro Native Build Successful**
-            
-            **Changes:**
-            - Premium UI/UX Overhaul (Linear Style)
-            - Fixed QR Code Snap Sharing
-            - Added Developer Contacts (Telegram, Email, GitHub)
-            - Improved Security Keypad
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CLASSIC }}
+          name: VaultX-Pro-APK
+          path: VaultX/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7 # Artifact akan otomatis dihapus setelah 7 hari
