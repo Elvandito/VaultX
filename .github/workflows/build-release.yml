@@ -44,6 +44,7 @@ jobs:
         run: |
           WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
           cd "$WORKDIR"
+          # Retry loop for networking issues
           for i in {1..3}; do
             flutter build apk --release --no-tree-shake-icons && break || sleep 15;
           done
