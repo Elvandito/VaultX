@@ -147,7 +147,15 @@ class _LoginState extends State<Login> {
 
   Future<void> _submit() async {
     final prefs = await SharedPreferences.getInstance();
-    bool ok = prefs.containsKey('v_data') ? await widget.state.unlock(pin) : (await widget.state.init(pin), true).$2;
+    bool ok = false;
+    
+    if (prefs.containsKey('v_data')) {
+      ok = await widget.state.unlock(pin);
+    } else {
+      await widget.state.init(pin);
+      ok = true;
+    }
+
     if (!ok) {
       HapticFeedback.vibrate();
       setState(() { error = true; pin = ""; });
