@@ -285,7 +285,7 @@ class _ItemTileState extends State<_ItemTile> {
   IconData _getTypeIcon(String t) {
     switch(t) {
       case 'pass': return CupertinoIcons.lock_fill;
-      case 'key': return CupertinoIcons.key; // FIXED: key_fill changed to key
+      case 'key': return CupertinoIcons.lock_open_fill; // FIXED: Changed to widely available icon
       case 'note': return CupertinoIcons.doc_text_fill;
       case 'card': return CupertinoIcons.creditcard_fill;
       case 'wifi': return CupertinoIcons.wifi;
