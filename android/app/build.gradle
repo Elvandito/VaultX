@@ -5,17 +5,17 @@ plugins {
 }
 
 android {
-    namespace "com.elvandito.vaultx" // Harus sama dengan package di MainActivity.kt
+    namespace "com.elvandito.vaultx"
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.elvandito.vaultx" // Harus sama
+        applicationId "com.elvandito.vaultx"
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0.0"
     }
-    
+
     buildTypes {
         release {
             signingConfig signingConfigs.debug
@@ -30,10 +30,10 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = "17"
     }
 }
 
 flutter {
-    source '../..'
+    source "../.."
 }
