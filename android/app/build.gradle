@@ -5,17 +5,17 @@ plugins {
 }
 
 android {
-    namespace "com.elvandito.vaultx"
+    namespace "com.elvandito.vaultx" // Harus sama dengan package di MainActivity.kt
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.elvandito.vaultx"
+        applicationId "com.elvandito.vaultx" // Harus sama
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0.0"
     }
-
+    
     buildTypes {
         release {
             signingConfig signingConfigs.debug
