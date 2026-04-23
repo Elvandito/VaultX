@@ -23,6 +23,7 @@ class AppTheme {
   static const Color bg = CupertinoColors.black;
   static const Color surface = Color(0xFF1C1C1E);
   static const Color border = Color(0xFF2C2C2E);
+  static const Color textMuted = CupertinoColors.systemGrey; // FIXED: Added missing member
 
   static CupertinoThemeData get iosTheme => const CupertinoThemeData(
     brightness: Brightness.dark,
