@@ -19,29 +19,31 @@ void main() {
 }
 
 class AppTheme {
-  static const Color primary = CupertinoColors.activeBlue;
+  static const Color primary = CupertinoColors.systemBlue;
   static const Color bg = CupertinoColors.black;
-  static const Color surface = Color(0xFF1C1C1E);
-  static const Color border = Color(0xFF2C2C2E);
+  static const Color groupedBg = Color(0xFF000000); // Black for OLED
+  static const Color surface = Color(0xFF1C1C1E); // iOS Elevated Element
+  static const Color surfaceHighlight = Color(0xFF2C2C2E);
+  static const Color border = Color(0xFF38383A);
   static const Color textMuted = CupertinoColors.systemGrey;
 
   static CupertinoThemeData get iosTheme => const CupertinoThemeData(
     brightness: Brightness.dark,
     primaryColor: primary,
     scaffoldBackgroundColor: bg,
-    barBackgroundColor: Color(0xCC1C1C1E), // Glassmorphism blur
-    textTheme: CupertinoTextThemeData(
-      primaryColor: CupertinoColors.white,
-      navLargeTitleTextStyle: TextStyle(
-        inherit: false,
-        fontSize: 34,
-        fontWeight: FontWeight.w800,
-        color: CupertinoColors.white,
-        letterSpacing: -1.0,
-      ),
-    ),
+    barBackgroundColor: Color(0xCC1C1C1E), // Glassmorphism
+    textTheme: CupertinoTextThemeData(primaryColor: CupertinoColors.white),
   );
 }
+
+// Data model for category types
+final Map<String, Map<String, dynamic>> kTypes = {
+  'pass': {'label': 'Password', 'icon': CupertinoIcons.lock_fill, 'color': CupertinoColors.systemBlue},
+  'key': {'label': 'API Key', 'icon': CupertinoIcons.link, 'color': CupertinoColors.systemPurple},
+  'note': {'label': 'Note', 'icon': CupertinoIcons.doc_text_fill, 'color': CupertinoColors.systemYellow},
+  'card': {'label': 'Card', 'icon': CupertinoIcons.creditcard_fill, 'color': CupertinoColors.systemOrange},
+  'wifi': {'label': 'WiFi', 'icon': CupertinoIcons.wifi, 'color': CupertinoColors.systemGreen},
+};
 
 class CryptoEngine {
   static final _aes = AesGcm.with256bits();
@@ -111,8 +113,8 @@ class VaultXApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      theme: AppTheme.iosTheme,
-      home: const MainWrapper(),
+      theme: AppTheme.iosTheme, 
+      home: const MainWrapper(), 
       debugShowCheckedModeBanner: false,
     );
   }
@@ -145,7 +147,7 @@ class _LoginState extends State<Login> {
   bool error = false;
 
   void _onPress(String v) {
-    HapticFeedback.mediumImpact();
+    HapticFeedback.lightImpact();
     setState(() {
       error = false;
       if (v == "D") pin = pin.isNotEmpty ? pin.substring(0, pin.length - 1) : "";
@@ -163,9 +165,9 @@ class _LoginState extends State<Login> {
       await widget.state.init(pin);
       ok = true;
     }
-    if (!ok) {
-      HapticFeedback.heavyImpact();
-      setState(() { error = true; pin = ""; });
+    if (!ok) { 
+      HapticFeedback.heavyImpact(); 
+      setState(() { error = true; pin = ""; }); 
     }
   }
 
@@ -176,32 +178,33 @@ class _LoginState extends State<Login> {
         child: Column(
           children: [
             const Spacer(flex: 2),
-            const Icon(CupertinoIcons.lock_shield_fill, size: 84, color: AppTheme.primary),
-            const SizedBox(height: 20),
-            const Text("VaultX", style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
-            const Text("Private Offline Vault", style: TextStyle(color: AppTheme.textMuted, fontSize: 15)),
-            const SizedBox(height: 48),
+            const Icon(CupertinoIcons.lock_shield_fill, size: 72, color: CupertinoColors.white),
+            const SizedBox(height: 16),
+            const Text("Enter Passcode", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (i) => AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 150),
                 margin: const EdgeInsets.symmetric(horizontal: 14),
-                width: 16, height: 16,
+                width: 14, height: 14,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: error ? CupertinoColors.systemRed : AppTheme.border, width: 2),
-                  color: pin.length > i ? (error ? CupertinoColors.systemRed : CupertinoColors.white) : Colors.transparent,
+                  border: Border.all(color: error ? CupertinoColors.systemRed : (pin.length > i ? Colors.transparent : AppTheme.border), width: 1.5),
+                  color: error ? CupertinoColors.systemRed : (pin.length > i ? CupertinoColors.white : Colors.transparent),
                 ),
               )),
             ),
             const Spacer(flex: 3),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
               child: GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 3,
-                mainAxisSpacing: 24,
-                crossAxisSpacing: 24,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 25,
+                childAspectRatio: 1,
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
                   ...List.generate(9, (i) => _kBtn((i + 1).toString())),
                   const SizedBox(), _kBtn("0"), _kBtn("D", icon: CupertinoIcons.delete_left),
@@ -218,14 +221,11 @@ class _LoginState extends State<Login> {
     padding: EdgeInsets.zero,
     onPressed: () => _onPress(v),
     child: Container(
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle, 
-        color: AppTheme.surface,
-      ),
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.surface),
       alignment: Alignment.center,
       child: icon != null 
         ? Icon(icon, color: Colors.white, size: 28) 
-        : Text(v, style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.w400)),
+        : Text(v, style: const TextStyle(fontSize: 34, color: Colors.white, fontWeight: FontWeight.w400)),
     ),
   );
 }
@@ -250,64 +250,68 @@ class _DashboardState extends State<Dashboard> {
         items: const [
           BottomNavigationBarItem(icon: Icon(CupertinoIcons.lock_shield_fill), label: 'Vault'),
           BottomNavigationBarItem(icon: Icon(CupertinoIcons.star_fill), label: 'Favs'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.person_crop_circle_fill), label: 'Setup'),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.gear_alt_fill), label: 'Settings'),
         ],
       ),
-      tabBuilder: (c, i) => i == 2 ? SettingsView(state: widget.state) : _buildVaultList(i),
+      tabBuilder: (c, i) => i == 2 ? SettingsView(state: widget.state) : _buildVault(i),
     );
   }
 
-  Widget _buildVaultList(int filterType) {
+  Widget _buildVault(int type) {
     final items = (widget.state.vault?['items'] as List? ?? []).where((i) {
-      if (filterType == 1 && i['fav'] != true) return false;
+      if (type == 1 && i['fav'] != true) return false;
       return i['title'].toString().toLowerCase().contains(query.toLowerCase());
     }).toList();
 
     return CupertinoPageScaffold(
+      backgroundColor: AppTheme.groupedBg,
       child: CustomScrollView(
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: const Text("VaultX"),
+            largeTitle: Text(type == 0 ? "Passwords" : "Favorites"),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero, 
-              child: const Icon(CupertinoIcons.add_circled, size: 28), 
+              child: const Icon(CupertinoIcons.add, size: 28), 
               onPressed: () => _showForm()
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: CupertinoSearchTextField(onChanged: (v) => setState(() => query = v)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: CupertinoSearchTextField(
+                onChanged: (v) => setState(() => query = v),
+                placeholder: "Search",
+              ),
             ),
           ),
           SliverFillRemaining(
             hasScrollBody: false,
             child: items.isEmpty 
-              ? const Center(child: Text("Empty Vault", style: TextStyle(color: AppTheme.textMuted)))
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.surface,
-                      borderRadius: BorderRadius.circular(12),
+            ? const Center(child: Text("No items found.", style: TextStyle(color: AppTheme.textMuted)))
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListView.separated(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: items.length,
+                    separatorBuilder: (c, i) => const Padding(
+                      padding: EdgeInsets.only(left: 60),
+                      child: Divider(color: AppTheme.border, height: 1, thickness: 0.5),
                     ),
-                    child: ListView.separated(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: items.length,
-                      separatorBuilder: (c, i) => const Padding(
-                        padding: EdgeInsets.only(left: 56),
-                        child: Divider(color: AppTheme.border, height: 1),
-                      ),
-                      itemBuilder: (c, i) => _ItemTile(
-                        item: items[i], 
-                        state: widget.state, 
-                        onEdit: () => _showForm(items[i])
-                      ),
+                    itemBuilder: (c, i) => _ItemTile(
+                      item: items[i], 
+                      state: widget.state, 
+                      onEdit: () => _showForm(items[i])
                     ),
                   ),
                 ),
+              ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -316,7 +320,10 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _showForm([Map? item]) {
-    showCupertinoModalPopup(context: context, builder: (c) => _ItemForm(state: widget.state, item: item));
+    showCupertinoModalPopup(
+      context: context, 
+      builder: (c) => _FormModal(state: widget.state, item: item)
+    );
   }
 }
 
@@ -329,117 +336,168 @@ class _ItemTile extends StatefulWidget {
   State<_ItemTile> createState() => _ItemTileState();
 }
 
-class _ItemTileState extends State<_ItemTile> {
-  bool show = false;
+class _ItemTileState extends State<_ItemTile> with SingleTickerProviderStateMixin {
+  bool expanded = false;
   final ss = ScreenshotController();
 
-  IconData _getTypeIcon(String t) {
-    switch(t) {
-      case 'pass': return CupertinoIcons.lock_fill;
-      case 'key': return CupertinoIcons.lock_open_fill;
-      case 'note': return CupertinoIcons.doc_text_fill;
-      case 'card': return CupertinoIcons.creditcard_fill;
-      case 'wifi': return CupertinoIcons.wifi;
-      default: return CupertinoIcons.lock_shield_fill;
-    }
+  void _toggle() {
+    HapticFeedback.selectionClick();
+    setState(() => expanded = !expanded);
   }
 
   void _preview() {
     showCupertinoDialog(context: context, builder: (ctx) => CupertinoAlertDialog(
-      title: Text(widget.item['title']),
       content: Screenshot(
         controller: ss,
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: AppTheme.bg, 
             borderRadius: BorderRadius.circular(16), 
-            border: Border.all(color: AppTheme.primary, width: 0.5)
+            border: Border.all(color: AppTheme.border)
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(_getTypeIcon(widget.item['type']), color: AppTheme.primary, size: 40),
-              const SizedBox(height: 12),
-              Text(widget.item['user'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              _buildIcon(48, 24),
               const SizedBox(height: 16),
-              Container(color: Colors.white, padding: const EdgeInsets.all(8), child: QrImageView(data: widget.item['sec'], size: 140)),
-              const SizedBox(height: 12),
-              const Text("VAULTX PROTECTION", style: TextStyle(fontSize: 8, letterSpacing: 2, color: AppTheme.textMuted)),
+              Text(widget.item['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+              const SizedBox(height: 4),
+              Text(widget.item['user'] ?? "", style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+              const SizedBox(height: 24),
+              Container(
+                color: Colors.white, 
+                padding: const EdgeInsets.all(8), 
+                child: QrImageView(data: widget.item['sec'], size: 160)
+              ),
             ],
           ),
         ),
       ),
       actions: [
         CupertinoDialogAction(child: const Text("Close"), onPressed: () => Navigator.pop(ctx)),
-        CupertinoDialogAction(child: const Text("Share Snap"), onPressed: () async {
-          final b = await ss.capture();
-          if (b != null) {
-            final p = (await getTemporaryDirectory()).path;
-            final f = await File('$p/v.png').create();
-            await f.writeAsBytes(b);
-            await Share.shareXFiles([XFile(f.path)]);
+        CupertinoDialogAction(
+          child: const Text("Share Snap", style: TextStyle(fontWeight: FontWeight.bold)), 
+          onPressed: () async {
+            final b = await ss.capture();
+            if (b != null) {
+              final p = (await getTemporaryDirectory()).path;
+              final f = await File('$p/vaultx_snap.png').create();
+              await f.writeAsBytes(b);
+              await Share.shareXFiles([XFile(f.path)]);
+            }
           }
-        }),
+        ),
       ],
     ));
   }
 
+  Widget _buildIcon(double size, double iconSize) {
+    final typeData = kTypes[widget.item['type'] ?? 'pass']!;
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        color: typeData['color'],
+        borderRadius: BorderRadius.circular(size * 0.25),
+      ),
+      child: Icon(typeData['icon'], color: Colors.white, size: iconSize),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      onPressed: () => setState(() => show = !show),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.bg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(_getTypeIcon(widget.item['type'] ?? 'pass'), color: AppTheme.primary, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _toggle,
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.item['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 17)),
-                Text(show ? widget.item['sec'] : "••••••••", style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                Row(
+                  children: [
+                    _buildIcon(40, 20),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.item['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 17)),
+                          Text(widget.item['user'] ?? "", style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    Icon(expanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down, color: AppTheme.textMuted, size: 16)
+                  ],
+                ),
+                if (expanded) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.bg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.border)
+                    ),
+                    child: Text(widget.item['sec'], style: const TextStyle(fontFamily: 'monospace', fontSize: 14, color: Colors.white)),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _actionBtn(CupertinoIcons.doc_on_clipboard, "Copy", () {
+                        Clipboard.setData(ClipboardData(text: widget.item['sec']));
+                        HapticFeedback.mediumImpact();
+                      }),
+                      _actionBtn(CupertinoIcons.qrcode, "QR Code", _preview),
+                      _actionBtn(widget.item['fav'] == true ? CupertinoIcons.star_fill : CupertinoIcons.star, "Favorite", () {
+                        setState(() { widget.item['fav'] = !(widget.item['fav'] ?? false); });
+                        widget.state.save();
+                      }, color: widget.item['fav'] == true ? CupertinoColors.systemYellow : null),
+                      _actionBtn(CupertinoIcons.pencil, "Edit", widget.onEdit),
+                    ],
+                  )
+                ]
               ],
             ),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero, 
-            child: Icon(widget.item['fav'] == true ? CupertinoIcons.star_fill : CupertinoIcons.star, size: 20), 
-            onPressed: () { widget.item['fav'] = !(widget.item['fav'] ?? false); widget.state.save(); }
-          ),
-          CupertinoButton(
-            padding: EdgeInsets.zero, 
-            child: const Icon(CupertinoIcons.qrcode, size: 20), 
-            onPressed: _preview
-          ),
-          CupertinoButton(
-            padding: EdgeInsets.zero, 
-            child: const Icon(CupertinoIcons.pencil_circle, size: 20), 
-            onPressed: widget.onEdit
-          ),
-        ],
+        ),
       ),
     );
   }
+
+  Widget _actionBtn(IconData i, String l, VoidCallback t, {Color? color}) => CupertinoButton(
+    padding: EdgeInsets.zero,
+    onPressed: t,
+    child: Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: AppTheme.surfaceHighlight, shape: BoxShape.circle),
+          child: Icon(i, size: 20, color: color ?? AppTheme.primary),
+        ),
+        const SizedBox(height: 4),
+        Text(l, style: TextStyle(fontSize: 10, color: color ?? AppTheme.primary))
+      ],
+    ),
+  );
 }
 
-class _ItemForm extends StatefulWidget {
+// True iOS Native Form Modal
+class _FormModal extends StatefulWidget {
   final VaultState state;
   final Map? item;
-  const _ItemForm({required this.state, this.item});
+  const _FormModal({required this.state, this.item});
   @override
-  State<_ItemForm> createState() => _ItemFormState();
+  State<_FormModal> createState() => _FormModalState();
 }
 
-class _ItemFormState extends State<_ItemForm> {
+class _FormModalState extends State<_FormModal> {
   late TextEditingController t, u, s;
   String type = 'pass';
 
@@ -452,73 +510,89 @@ class _ItemFormState extends State<_ItemForm> {
     type = widget.item?['type'] ?? 'pass';
   }
 
+  void _save() {
+    if (t.text.isEmpty || s.text.isEmpty) return;
+    final data = {'title': t.text, 'user': u.text, 'sec': s.text, 'type': type, 'fav': widget.item?['fav'] ?? false};
+    final list = (widget.state.vault?['items'] as List);
+    if (widget.item != null) {
+      list[list.indexOf(widget.item)] = data;
+    } else {
+      list.add(data);
+    }
+    widget.state.save();
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CupertinoActionSheet(
-      title: const Text("Credential Details"),
-      message: Column(
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: AppTheme.groupedBg,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      child: Column(
         children: [
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 36,
+          CupertinoNavigationBar(
+            backgroundColor: AppTheme.groupedBg,
+            leading: CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            middle: Text(widget.item == null ? "New Item" : "Edit Item"),
+            trailing: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: _save,
+              child: const Text("Save", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+          Expanded(
             child: ListView(
-              scrollDirection: Axis.horizontal,
               children: [
-                _tBtn("Password", "pass"), _tBtn("API Key", "key"), _tBtn("Note", "note"), _tBtn("Card", "card"), _tBtn("WiFi", "wifi"),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: kTypes.entries.map((e) => _tBtn(e.value['label'], e.key)).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                CupertinoFormSection.insetGrouped(
+                  backgroundColor: Colors.transparent,
+                  children: [
+                    CupertinoTextFormFieldRow(controller: t, prefix: const Text("Title"), placeholder: "Required"),
+                    CupertinoTextFormFieldRow(controller: u, prefix: const Text("User"), placeholder: "Optional"),
+                  ],
+                ),
+                CupertinoFormSection.insetGrouped(
+                  backgroundColor: Colors.transparent,
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      controller: s, 
+                      prefix: const Text("Secret"), 
+                      placeholder: "Required",
+                      obscureText: false, // Keep visible while editing
+                    ),
+                  ],
+                ),
+                if (widget.item != null) ...[
+                  const SizedBox(height: 20),
+                  CupertinoButton(
+                    child: const Text("Delete Credential", style: TextStyle(color: CupertinoColors.systemRed)),
+                    onPressed: () {
+                      (widget.state.vault?['items'] as List).remove(widget.item);
+                      widget.state.save();
+                      Navigator.pop(context);
+                    },
+                  )
+                ]
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          CupertinoFormSection.insetGrouped(
-            backgroundColor: Colors.transparent,
-            margin: EdgeInsets.zero,
-            children: [
-              CupertinoFormRow(
-                prefix: const Text("Title", style: TextStyle(fontSize: 14)),
-                child: CupertinoTextFormFieldRow(controller: t, placeholder: "e.g. Google", style: const TextStyle(fontSize: 14)),
-              ),
-              CupertinoFormRow(
-                prefix: const Text("User", style: TextStyle(fontSize: 14)),
-                child: CupertinoTextFormFieldRow(controller: u, placeholder: "Username", style: const TextStyle(fontSize: 14)),
-              ),
-              CupertinoFormRow(
-                prefix: const Text("Secret", style: TextStyle(fontSize: 14)),
-                child: CupertinoTextFormFieldRow(controller: s, placeholder: "••••••••", style: const TextStyle(fontSize: 14)),
-              ),
-            ],
-          ),
         ],
-      ),
-      actions: [
-        CupertinoActionSheetAction(
-          isDefaultAction: true,
-          onPressed: () {
-            if (t.text.isEmpty || s.text.isEmpty) return;
-            final data = {'title': t.text, 'user': u.text, 'sec': s.text, 'type': type, 'fav': widget.item?['fav'] ?? false};
-            final list = (widget.state.vault?['items'] as List);
-            if (widget.item != null) {
-              list[list.indexOf(widget.item)] = data;
-            } else {
-              list.add(data);
-            }
-            widget.state.save();
-            Navigator.pop(context);
-          },
-          child: const Text("Save"),
-        ),
-        if (widget.item != null) CupertinoActionSheetAction(
-          isDestructiveAction: true,
-          onPressed: () { 
-            (widget.state.vault?['items'] as List).remove(widget.item); 
-            widget.state.save(); 
-            Navigator.pop(context); 
-          },
-          child: const Text("Delete"),
-        ),
-      ],
-      cancelButton: CupertinoActionSheetAction(
-        child: const Text("Cancel"), 
-        onPressed: () => Navigator.pop(context)
       ),
     );
   }
@@ -527,10 +601,10 @@ class _ItemFormState extends State<_ItemForm> {
     padding: const EdgeInsets.only(right: 8),
     child: CupertinoButton(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      color: type == v ? AppTheme.primary : AppTheme.surface,
+      color: type == v ? AppTheme.primary : AppTheme.surfaceHighlight,
       borderRadius: BorderRadius.circular(20),
       onPressed: () => setState(() => type = v),
-      child: Text(l, style: TextStyle(fontSize: 11, color: type == v ? Colors.white : AppTheme.textMuted)),
+      child: Text(l, style: TextStyle(fontSize: 13, color: type == v ? Colors.white : AppTheme.textMuted)),
     ),
   );
 }
@@ -541,42 +615,43 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: AppTheme.groupedBg,
       child: CustomScrollView(
         slivers: [
-          const CupertinoSliverNavigationBar(largeTitle: Text("Setup")),
+          const CupertinoSliverNavigationBar(largeTitle: Text("Settings")),
           SliverToBoxAdapter(
             child: Column(
               children: [
-                const SizedBox(height: 16),
                 CupertinoListSection.insetGrouped(
-                  header: const Text("DEVELOPER CONTACT"),
+                  header: const Text("DEVELOPER"),
                   children: [
-                    _row("Telegram", "@Vann759", "https://t.me/Vann759"),
-                    _row("GitHub", "Elvandito", "https://github.com/Elvandito"),
-                    _row("Email", "ditoelvan2@gmail.com", "mailto:ditoelvan2@gmail.com"),
+                    _row(CupertinoIcons.paperplane_fill, "Telegram", "@Vann759", "https://t.me/Vann759", CupertinoColors.systemBlue),
+                    _row(CupertinoIcons.chevron_left_slash_chevron_right, "GitHub", "Elvandito", "https://github.com/Elvandito", CupertinoColors.black),
+                    _row(CupertinoIcons.mail_solid, "Email", "ditoelvan2@gmail.com", "mailto:ditoelvan2@gmail.com", CupertinoColors.systemRed),
                   ],
                 ),
                 CupertinoListSection.insetGrouped(
                   header: const Text("SECURITY"),
                   children: [
                     CupertinoListTile(
+                      leading: _iconBg(CupertinoIcons.lock_fill, AppTheme.textMuted),
+                      title: const Text("Lock Vault"),
+                      onTap: state.logout,
+                    ),
+                    CupertinoListTile(
+                      leading: _iconBg(CupertinoIcons.trash_fill, CupertinoColors.systemRed),
                       title: const Text("Wipe All Data", style: TextStyle(color: CupertinoColors.systemRed)),
-                      trailing: const Icon(CupertinoIcons.delete, color: CupertinoColors.systemRed, size: 20),
                       onTap: () async {
                         final p = await SharedPreferences.getInstance();
                         await p.clear();
                         state.logout();
                       },
                     ),
-                    CupertinoListTile(
-                      title: const Text("Logout & Lock"),
-                      trailing: const Icon(CupertinoIcons.lock, size: 20),
-                      onTap: state.logout,
-                    ),
                   ],
                 ),
                 const SizedBox(height: 40),
-                const Text("VaultX v1.2.0", style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                const Text("VaultX v1.3.0", style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                const SizedBox(height: 40),
               ],
             ),
           )
@@ -585,10 +660,17 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _row(String l, String v, String u) => CupertinoListTile(
+  Widget _iconBg(IconData icon, Color color) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+    child: Icon(icon, color: Colors.white, size: 18),
+  );
+
+  Widget _row(IconData icon, String l, String v, String u, Color c) => CupertinoListTile(
+    leading: _iconBg(icon, c),
     title: Text(l),
     additionalInfo: Text(v),
-    trailing: const Icon(CupertinoIcons.chevron_right, size: 14),
+    trailing: const Icon(CupertinoIcons.chevron_right, size: 14, color: AppTheme.textMuted),
     onTap: () => launchUrl(Uri.parse(u)),
   );
 }
