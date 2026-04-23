@@ -57,7 +57,6 @@ class AppTheme {
   }
 }
 
-// Crypto Logic (AES-GCM 256)
 class CryptoEngine {
   static final _aes = AesGcm.with256bits();
   static final _mac = Hmac.sha256();
@@ -105,8 +104,12 @@ class VaultState extends ChangeNotifier {
   Future<bool> unlock(String pin) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final salt = base64Decode(prefs.getString(kSalt)!);
-      final data = jsonDecode(prefs.getString(kData)!);
+      final saltStr = prefs.getString(kSalt);
+      final dataStr = prefs.getString(kData);
+      if (saltStr == null || dataStr == null) return false;
+      
+      final salt = base64Decode(saltStr);
+      final data = jsonDecode(dataStr);
       _key = await CryptoEngine.deriveKey(pin, salt);
       vault = await CryptoEngine.decrypt(data['c'], data['i'], _key!);
       isAuthenticated = true;
@@ -116,7 +119,7 @@ class VaultState extends ChangeNotifier {
   }
 
   Future<void> save() async {
-    if (_key == null) return;
+    if (_key == null || vault == null) return;
     final enc = await CryptoEngine.encrypt(vault!, _key!);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(kData, jsonEncode(enc));
@@ -174,10 +177,21 @@ class _LoginState extends State<Login> {
     });
   }
 
+  // FIXED LOGIC
   Future<void> _go() async {
     final prefs = await SharedPreferences.getInstance();
-    bool success = prefs.containsKey('vlt_pro_d') ? await widget.state.unlock(pin) : (await widget.state.init(pin), true).item2;
-    if (!success) setState(() => error = true);
+    bool success = false;
+    
+    if (prefs.containsKey('vlt_pro_d')) {
+      success = await widget.state.unlock(pin);
+    } else {
+      await widget.state.init(pin);
+      success = true; 
+    }
+
+    if (!success) {
+      setState(() => error = true);
+    }
   }
 
   @override
@@ -288,7 +302,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _list() {
-    final items = (widget.state.vault?['items'] as List).where((i) {
+    final items = (widget.state.vault?['items'] as List? ?? []).where((i) {
       if (tab == 1 && i['fav'] != true) return false;
       if (tab == 2 && i['type'] != 'password') return false;
       if (tab == 3 && i['type'] != 'api_key') return false;
@@ -464,10 +478,10 @@ class _ItemFormState extends State<ItemForm> {
                     'fav': widget.item?['fav'] ?? false
                   };
                   if (widget.item != null) {
-                    final idx = widget.state.vault?['items'].indexOf(widget.item);
+                    final idx = (widget.state.vault?['items'] as List).indexOf(widget.item);
                     widget.state.vault?['items'][idx] = data;
                   } else {
-                    widget.state.vault?['items'].add(data);
+                    (widget.state.vault?['items'] as List).add(data);
                   }
                   widget.state.save();
                   Navigator.pop(context);
