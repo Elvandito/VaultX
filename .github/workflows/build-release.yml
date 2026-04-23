@@ -28,22 +28,30 @@ jobs:
 
       - name: Create local.properties
         run: |
-          mkdir -p VaultX/android
-          echo "flutter.sdk=$FLUTTER_ROOT" > VaultX/android/local.properties
+          # Mencari folder android secara dinamis dan membuat local.properties
+          ANDROID_PATH=$(find . -name "android" -type d -not -path "*/.*" | head -n 1)
+          echo "flutter.sdk=$FLUTTER_ROOT" > "$ANDROID_PATH/local.properties"
         shell: bash
 
       - name: Install Dependencies
-        working-directory: VaultX
-        run: flutter pub get
+        run: |
+          # Mencari pubspec.yaml secara dinamis
+          WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
+          cd "$WORKDIR"
+          flutter pub get
 
       - name: Build Release APK
-        working-directory: VaultX
-        run: flutter build apk --release --no-tree-shake-icons
+        run: |
+          # Mencari pubspec.yaml secara dinamis dan build
+          WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
+          cd "$WORKDIR"
+          flutter build apk --release --no-tree-shake-icons
 
-      # Mengunggah hasil build sebagai Artifact (Bisa didownload di tab Actions)
+      # PERBAIKAN UTAMA: Menggunakan wildcard untuk mencari file APK
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: VaultX-Pro-APK
-          path: VaultX/build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 7 # Artifact akan otomatis dihapus setelah 7 hari
+          path: "**/build/app/outputs/flutter-apk/app-release.apk"
+          if-no-files-found: error # Akan error jika tetap tidak ketemu
+          retention-days: 7
