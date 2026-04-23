@@ -2,8 +2,8 @@ name: Build & Release Native Flutter APK
 
 on:
   push:
-    branches: [ "main" ] # Berjalan otomatis saat ada push ke branch main
-  workflow_dispatch:     # Tombol untuk menjalankan build secara manual
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build-and-release:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout kode dari repositori GitHub (Update ke v4)
+      # 1. Checkout kode (Update ke v4)
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -26,32 +26,36 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0' # Versi stabil Flutter
+          flutter-version: '3.19.0'
           channel: 'stable'
 
-      # 4. Install Dependencies
+      # 4. Ambil Dependencies
+      # Jika file pubspec.yaml Anda ada di dalam folder 'vaultx', 
+      # ubah line di bawah menjadi: working-directory: vaultx
       - name: Install Dependencies
         run: flutter pub get
+        # working-directory: . 
 
       # 5. Build APK Native Android
       - name: Build Release APK
         run: flutter build apk --release
+        # working-directory: .
 
       # 6. Upload APK sebagai Artifact (Update ke v4)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: VaultX-Native-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: "**/build/app/outputs/flutter-apk/app-release.apk"
 
-      # 7. Otomatis Membuat Rilis di GitHub (Update ke v2 untuk keamanan Node terbaru)
+      # 7. Otomatis Membuat Rilis di GitHub
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: "**/build/app/outputs/flutter-apk/app-release.apk"
           tag_name: "v1.0.${{ github.run_number }}"
           name: "VaultX Native Update (Build ${{ github.run_number }})"
-          body: "🚀 Auto-generated Fully Native (Flutter) APK build."
+          body: "🚀 Auto-generated Fully Native (Flutter) APK build sukses."
           draft: false
           prerelease: false
         env:
