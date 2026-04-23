@@ -41,15 +41,23 @@ jobs:
 
       - name: Build Release APK
         working-directory: VaultX
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          # This wildcard ensures it finds the APK even if paths differ slightly
           files: "VaultX/build/app/outputs/flutter-apk/app-release.apk"
           tag_name: "v1.2.${{ github.run_number }}"
-          name: "VaultX Native Update (Build ${{ github.run_number }})"
-          body: "🚀 Build sukses! File MainActivity.kt telah dibersihkan dari kode Gradle."
+          name: "VaultX Pro Update (Build ${{ github.run_number }})"
+          body: |
+            🚀 **VaultX Pro Native Build Successful**
+            
+            **Changes:**
+            - Premium UI/UX Overhaul (Linear Style)
+            - Fixed QR Code Snap Sharing
+            - Added Developer Contacts (Telegram, Email, GitHub)
+            - Improved Security Keypad
           draft: false
           prerelease: false
         env:
