@@ -5,10 +5,9 @@ pluginManagement {
         if (propertiesFile.exists()) {
             propertiesFile.withInputStream { properties.load(it) }
         }
-        
         def sdkPath = properties.getProperty("flutter.sdk") ?: System.getenv("FLUTTER_ROOT")
         if (sdkPath == null) {
-            throw new GradleException("Flutter SDK path not found. Define flutter.sdk in local.properties or set FLUTTER_ROOT env variable.")
+            throw new GradleException("Flutter SDK path not found.")
         }
         return sdkPath
     }()
@@ -29,3 +28,15 @@ plugins {
 }
 
 include ":app"
+
+// BARIS KRUSIAL: Mencari plugin otomatis (shared_preferences, dll)
+def flutterSdkPath = {
+    def properties = new Properties()
+    def propertiesFile = file("local.properties")
+    if (propertiesFile.exists()) {
+        propertiesFile.withInputStream { properties.load(it) }
+    }
+    return properties.getProperty("flutter.sdk") ?: System.getenv("FLUTTER_ROOT")
+}()
+
+apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
