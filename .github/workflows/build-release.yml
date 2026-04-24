@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -24,20 +24,34 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      # STEP BARU: Memperbaiki folder Android yang korup/hilang resource-nya
-      - name: Repair Android Project Structure
+      # 1. Memaksa nama di pubspec.yaml menjadi huruf kecil semua (vault_krypt)
+      - name: Fix pubspec.yaml naming rule
         run: |
-          rm -rf android/
-          flutter create --platforms android --org com.elvandito .
+          sed -i 's/^name: .*/name: vault_krypt/' pubspec.yaml
 
+      # 2. Membuat folder Android di direktori /tmp agar Flutter tidak mendeteksi nama repo VaultX
+      - name: Generate Clean Android Folder
+        run: |
+          cd /tmp
+          flutter config --no-analytics
+          flutter create --platforms android --org com.elvandito --project-name vault_krypt dummy_project
+          
+          # Kembali ke direktori repo kita dan timpa folder android lama dengan yang baru
+          cd ${{ github.workspace }}
+          rm -rf android/
+          cp -r /tmp/dummy_project/android ./
+
+      # 3. Download package cryptography, dll
       - name: Install dependencies
         run: flutter pub get
 
+      # 4. Build APK Release
       - name: Build APK
         run: flutter build apk --release
 
+      # 5. Simpan APK ke GitHub Artifacts
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
+          name: vaultkrypt-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
