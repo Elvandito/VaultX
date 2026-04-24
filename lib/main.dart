@@ -18,13 +18,14 @@ void main() {
   runApp(const VaultXApp());
 }
 
+// ==========================================
+// 1. IOS NATIVE THEME (PIXEL PERFECT)
+// ==========================================
 class AppTheme {
   static const Color primary = CupertinoColors.systemBlue;
-  // Apple True OLED Black for backgrounds
-  static const Color systemBackground = Color(0xFF000000); 
-  // Apple Elevated Surface (Cards/Lists)
-  static const Color secondarySystemBackground = Color(0xFF1C1C1E); 
-  // Apple Borders
+  static const Color systemBackground = Color(0xFF000000); // OLED Black
+  static const Color secondarySystemBackground = Color(0xFF1C1C1E); // Elevated Card
+  static const Color tertiarySystemBackground = Color(0xFF2C2C2E); // Highlight
   static const Color separator = Color(0xFF38383A);
   static const Color textSecondary = Color(0xFF8E8E93);
   static const Color textPlaceholder = Color(0xFF48484A);
@@ -33,7 +34,7 @@ class AppTheme {
     brightness: Brightness.dark,
     primaryColor: primary,
     scaffoldBackgroundColor: systemBackground,
-    barBackgroundColor: Color(0xCC1C1C1E), // Deep frosted glass
+    barBackgroundColor: Color(0xCC1C1C1E), // Frosted glass nav bar
     textTheme: CupertinoTextThemeData(
       primaryColor: CupertinoColors.white,
       textStyle: TextStyle(fontFamily: '.SF Pro Text', color: Colors.white, letterSpacing: -0.4),
@@ -55,15 +56,17 @@ class AppTheme {
   );
 }
 
-// Data model for category types matching Apple's Passwords app
 final Map<String, Map<String, dynamic>> kTypes = {
-  'pass': {'label': 'Kata Laluan', 'icon': CupertinoIcons.lock_fill, 'color': CupertinoColors.systemBlue},
-  'key': {'label': 'Kunci API', 'icon': CupertinoIcons.link, 'color': CupertinoColors.systemIndigo},
-  'note': {'label': 'Nota Selamat', 'icon': CupertinoIcons.doc_text_fill, 'color': CupertinoColors.systemYellow},
-  'card': {'label': 'Kad Kredit', 'icon': CupertinoIcons.creditcard_fill, 'color': CupertinoColors.systemOrange},
+  'pass': {'label': 'Password', 'icon': CupertinoIcons.lock_fill, 'color': CupertinoColors.systemBlue},
+  'key': {'label': 'API Key', 'icon': CupertinoIcons.link, 'color': CupertinoColors.systemIndigo},
+  'note': {'label': 'Secure Note', 'icon': CupertinoIcons.doc_text_fill, 'color': CupertinoColors.systemYellow},
+  'card': {'label': 'Credit Card', 'icon': CupertinoIcons.creditcard_fill, 'color': CupertinoColors.systemOrange},
   'wifi': {'label': 'WiFi', 'icon': CupertinoIcons.wifi, 'color': CupertinoColors.systemGreen},
 };
 
+// ==========================================
+// 2. CRYPTOGRAPHY CORE
+// ==========================================
 class CryptoEngine {
   static final _aes = AesGcm.with256bits();
   static Future<SecretKey> deriveKey(String pin, List<int> salt) async {
@@ -124,7 +127,11 @@ class VaultState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() { _key = null; vault = null; isAuth = false; notifyListeners(); }
+  void logout() { 
+    _key = null; vault = null; isAuth = false; 
+    HapticFeedback.mediumImpact();
+    notifyListeners(); 
+  }
 }
 
 class VaultXApp extends StatelessWidget {
@@ -154,6 +161,65 @@ class _MainWrapperState extends State<MainWrapper> {
   );
 }
 
+// ==========================================
+// 3. IOS NATIVE TOUCH & ANIMATION WIDGETS
+// ==========================================
+class TouchButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final Color baseColor;
+  final Color highlightColor;
+  final bool isCircle;
+
+  const TouchButton({
+    super.key, 
+    required this.child, 
+    required this.onTap, 
+    required this.baseColor,
+    required this.highlightColor,
+    this.isCircle = false,
+  });
+
+  @override
+  State<TouchButton> createState() => _TouchButtonState();
+}
+
+class _TouchButtonState extends State<TouchButton> with SingleTickerProviderStateMixin {
+  bool _isDown = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) {
+        HapticFeedback.selectionClick();
+        setState(() => _isDown = true);
+      },
+      onTapUp: (_) {
+        setState(() => _isDown = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _isDown = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        decoration: BoxDecoration(
+          color: _isDown ? widget.highlightColor : widget.baseColor,
+          shape: widget.isCircle ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: widget.isCircle ? null : BorderRadius.circular(16),
+        ),
+        alignment: Alignment.center,
+        child: AnimatedScale(
+          scale: _isDown ? 0.92 : 1.0,
+          duration: const Duration(milliseconds: 100),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 4. LOGIN / LOCK SCREEN
+// ==========================================
 class Login extends StatefulWidget {
   final VaultState state;
   const Login({super.key, required this.state});
@@ -172,11 +238,11 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     super.initState();
     _shakeCtrl = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
     _shakeAnim = TweenSequence([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -10.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -10.0, end: 10.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 10.0, end: -10.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -10.0, end: 10.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 10.0, end: 0.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -12.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -12.0, end: 12.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 12.0, end: -12.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -12.0, end: 12.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 12.0, end: 0.0), weight: 1),
     ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.easeInOut));
   }
 
@@ -184,11 +250,13 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   void dispose() { _shakeCtrl.dispose(); super.dispose(); }
 
   void _onPress(String v) {
-    HapticFeedback.lightImpact();
     setState(() {
       error = false;
-      if (v == "D") pin = pin.isNotEmpty ? pin.substring(0, pin.length - 1) : "";
-      else if (pin.length < 4) pin += v;
+      if (v == "D") {
+        pin = pin.isNotEmpty ? pin.substring(0, pin.length - 1) : "";
+      } else if (pin.length < 4) {
+        pin += v;
+      }
     });
     if (pin.length == 4) _submit();
   }
@@ -196,12 +264,21 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   Future<void> _submit() async {
     final prefs = await SharedPreferences.getInstance();
     bool ok = false;
+    
+    // Easter Egg specific PIN check (Example: 0000 gives a funny vibration before clearing)
+    if (pin == "0000" && !prefs.containsKey('v_data')) {
+      HapticFeedback.vibrate();
+      await Future.delayed(const Duration(milliseconds: 200));
+      HapticFeedback.vibrate();
+    }
+
     if (prefs.containsKey('v_data')) {
       ok = await widget.state.unlock(pin);
     } else {
       await widget.state.init(pin);
       ok = true;
     }
+
     if (!ok) { 
       HapticFeedback.heavyImpact(); 
       setState(() => error = true);
@@ -219,8 +296,10 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
             const Spacer(flex: 2),
             const Icon(CupertinoIcons.lock_fill, size: 48, color: CupertinoColors.white),
             const SizedBox(height: 16),
-            const Text("Masukkan Kod Laluan", style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400)),
-            const SizedBox(height: 24),
+            const Text("Enter Passcode", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, letterSpacing: 0.5)),
+            const SizedBox(height: 32),
+            
+            // Passcode Dots
             AnimatedBuilder(
               animation: _shakeAnim,
               builder: (c, _) => Transform.translate(
@@ -228,8 +307,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(4, (i) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 100),
-                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    duration: const Duration(milliseconds: 150),
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
                     width: 14, height: 14,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -240,9 +319,12 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
+            
             const Spacer(flex: 3),
+            
+            // Numpad
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 30),
               child: GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 3,
@@ -262,19 +344,20 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _kBtn(String v, {IconData? icon}) => CupertinoButton(
-    padding: EdgeInsets.zero,
-    onPressed: () => _onPress(v),
-    child: Container(
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.secondarySystemBackground),
-      alignment: Alignment.center,
-      child: icon != null 
-        ? Icon(icon, color: Colors.white, size: 24) 
-        : Text(v, style: const TextStyle(fontSize: 34, color: Colors.white, fontWeight: FontWeight.w400)),
-    ),
+  Widget _kBtn(String v, {IconData? icon}) => TouchButton(
+    isCircle: true,
+    baseColor: AppTheme.secondarySystemBackground,
+    highlightColor: AppTheme.tertiarySystemBackground,
+    onTap: () => _onPress(v),
+    child: icon != null 
+      ? Icon(icon, color: Colors.white, size: 26) 
+      : Text(v, style: const TextStyle(fontSize: 34, color: Colors.white, fontWeight: FontWeight.w400)),
   );
 }
 
+// ==========================================
+// 5. DASHBOARD & NAVIGATION
+// ==========================================
 class Dashboard extends StatefulWidget {
   final VaultState state;
   const Dashboard({super.key, required this.state});
@@ -294,11 +377,14 @@ class _DashboardState extends State<Dashboard> {
         activeColor: AppTheme.primary,
         inactiveColor: AppTheme.textSecondary,
         currentIndex: tab,
-        onTap: (i) => setState(() => tab = i),
+        onTap: (i) {
+          HapticFeedback.selectionClick();
+          setState(() => tab = i);
+        },
         items: const [
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.shield_fill), label: 'Peti Besi'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.star_fill), label: 'Kegemaran'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.settings), label: 'Tetapan'),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.lock_shield_fill), label: 'Vault'),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.star_fill), label: 'Favorites'),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.gear_alt_fill), label: 'Settings'),
         ],
       ),
       tabBuilder: (c, i) => i == 2 ? SettingsView(state: widget.state) : _buildVault(i),
@@ -317,26 +403,29 @@ class _DashboardState extends State<Dashboard> {
         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text(type == 0 ? "Kredensial" : "Kegemaran"),
+            largeTitle: Text(type == 0 ? "Passwords" : "Favorites"),
             backgroundColor: AppTheme.systemBackground.withOpacity(0.85),
             border: null,
             trailing: CupertinoButton(
               padding: EdgeInsets.zero, 
-              child: const Icon(CupertinoIcons.add, size: 24), 
-              onPressed: () => _showForm()
+              child: const Icon(CupertinoIcons.add, size: 28), 
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _showForm();
+              }
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: SizedBox(
-                height: 36,
+                height: 38,
                 child: CupertinoSearchTextField(
                   onChanged: (v) => setState(() => query = v),
                   backgroundColor: AppTheme.secondarySystemBackground,
                   placeholderStyle: const TextStyle(color: AppTheme.textPlaceholder, fontSize: 17),
                   style: const TextStyle(color: Colors.white, fontSize: 17),
-                  placeholder: "Cari",
+                  placeholder: "Search",
                 ),
               ),
             ),
@@ -344,13 +433,13 @@ class _DashboardState extends State<Dashboard> {
           SliverFillRemaining(
             hasScrollBody: false,
             child: items.isEmpty 
-            ? const Center(child: Text("Tiada Butiran.", style: TextStyle(color: AppTheme.textSecondary, fontSize: 15)))
+            ? const Center(child: Text("No Items Found.", style: TextStyle(color: AppTheme.textSecondary, fontSize: 15)))
             : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppTheme.secondarySystemBackground,
-                    borderRadius: BorderRadius.circular(10), // Perfect iOS radius
+                    borderRadius: BorderRadius.circular(10), // Apple standard list radius
                   ),
                   child: ListView.separated(
                     padding: EdgeInsets.zero,
@@ -358,7 +447,7 @@ class _DashboardState extends State<Dashboard> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: items.length,
                     separatorBuilder: (c, i) => const Padding(
-                      padding: EdgeInsets.only(left: 60), // Align with text
+                      padding: EdgeInsets.only(left: 60), 
                       child: Divider(color: AppTheme.separator, height: 1, thickness: 0.5),
                     ),
                     itemBuilder: (c, i) => _ItemTile(
@@ -384,6 +473,9 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
+// ==========================================
+// 6. LIST ITEM WITH FLUID EXPANSION
+// ==========================================
 class _ItemTile extends StatefulWidget {
   final Map item;
   final VaultState state;
@@ -403,6 +495,7 @@ class _ItemTileState extends State<_ItemTile> with SingleTickerProviderStateMixi
   }
 
   void _preview() {
+    HapticFeedback.lightImpact();
     showCupertinoDialog(context: context, builder: (ctx) => CupertinoAlertDialog(
       content: Screenshot(
         controller: ss,
@@ -431,9 +524,9 @@ class _ItemTileState extends State<_ItemTile> with SingleTickerProviderStateMixi
         ),
       ),
       actions: [
-        CupertinoDialogAction(child: const Text("Tutup"), onPressed: () => Navigator.pop(ctx)),
+        CupertinoDialogAction(child: const Text("Close"), onPressed: () => Navigator.pop(ctx)),
         CupertinoDialogAction(
-          child: const Text("Kongsi", style: TextStyle(fontWeight: FontWeight.bold)), 
+          child: const Text("Share Snap", style: TextStyle(fontWeight: FontWeight.bold)), 
           onPressed: () async {
             final b = await ss.capture();
             if (b != null) {
@@ -466,6 +559,8 @@ class _ItemTileState extends State<_ItemTile> with SingleTickerProviderStateMixi
       color: Colors.transparent,
       child: InkWell(
         onTap: _toggle,
+        highlightColor: AppTheme.tertiarySystemBackground,
+        splashColor: Colors.transparent,
         child: AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.fastOutSlowIn,
@@ -506,16 +601,20 @@ class _ItemTileState extends State<_ItemTile> with SingleTickerProviderStateMixi
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _actionBtn(CupertinoIcons.doc_on_clipboard, "Salin", () {
+                      _actionBtn(CupertinoIcons.doc_on_clipboard, "Copy", () {
                         Clipboard.setData(ClipboardData(text: widget.item['sec']));
-                        HapticFeedback.mediumImpact();
+                        HapticFeedback.lightImpact();
                       }),
                       _actionBtn(CupertinoIcons.qrcode, "QR", _preview),
-                      _actionBtn(widget.item['fav'] == true ? CupertinoIcons.star_fill : CupertinoIcons.star, "Kegemaran", () {
+                      _actionBtn(widget.item['fav'] == true ? CupertinoIcons.star_fill : CupertinoIcons.star, "Favorite", () {
+                        HapticFeedback.selectionClick();
                         setState(() { widget.item['fav'] = !(widget.item['fav'] ?? false); });
                         widget.state.save();
                       }, color: widget.item['fav'] == true ? CupertinoColors.systemYellow : null),
-                      _actionBtn(CupertinoIcons.pencil, "Sunting", widget.onEdit),
+                      _actionBtn(CupertinoIcons.pencil, "Edit", () {
+                        HapticFeedback.lightImpact();
+                        widget.onEdit();
+                      }),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -545,7 +644,9 @@ class _ItemTileState extends State<_ItemTile> with SingleTickerProviderStateMixi
   );
 }
 
-// True Native iOS Modal (Swipe down to dismiss)
+// ==========================================
+// 7. MODAL FORM 
+// ==========================================
 class _FormModal extends StatefulWidget {
   final VaultState state;
   final Map? item;
@@ -568,7 +669,12 @@ class _FormModalState extends State<_FormModal> {
   }
 
   void _save() {
-    if (t.text.isEmpty || s.text.isEmpty) return;
+    if (t.text.isEmpty || s.text.isEmpty) {
+      HapticFeedback.heavyImpact();
+      return;
+    }
+    
+    HapticFeedback.mediumImpact();
     final data = {'title': t.text, 'user': u.text, 'sec': s.text, 'type': type, 'fav': widget.item?['fav'] ?? false};
     final list = (widget.state.vault?['items'] as List);
     if (widget.item != null) {
@@ -583,14 +689,14 @@ class _FormModalState extends State<_FormModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.90, // Native Modal Height
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: const BoxDecoration(
         color: AppTheme.systemBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       ),
       child: Column(
         children: [
-          // Drag Handle
+          // Native iOS Modal Handle
           const SizedBox(height: 8),
           Container(width: 36, height: 5, decoration: BoxDecoration(color: AppTheme.separator, borderRadius: BorderRadius.circular(2.5))),
           
@@ -599,14 +705,17 @@ class _FormModalState extends State<_FormModal> {
             border: null,
             leading: CupertinoButton(
               padding: EdgeInsets.zero,
-              child: const Text("Batal"),
-              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.pop(context);
+              },
             ),
-            middle: Text(widget.item == null ? "Item Baru" : "Sunting Item", style: const TextStyle(fontWeight: FontWeight.w600)),
+            middle: Text(widget.item == null ? "New Item" : "Edit Item", style: const TextStyle(fontWeight: FontWeight.w600)),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: _save,
-              child: const Text("Simpan", style: TextStyle(fontWeight: FontWeight.w600)),
+              child: const Text("Save", style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
           Expanded(
@@ -627,8 +736,8 @@ class _FormModalState extends State<_FormModal> {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(color: AppTheme.secondarySystemBackground, borderRadius: BorderRadius.circular(10)),
                   children: [
-                    CupertinoTextFormFieldRow(controller: t, prefix: const Text("Tajuk", style: TextStyle(fontSize: 17)), placeholder: "Wajib"),
-                    CupertinoTextFormFieldRow(controller: u, prefix: const Text("Nama Pengguna", style: TextStyle(fontSize: 17)), placeholder: "Pilihan"),
+                    CupertinoTextFormFieldRow(controller: t, prefix: const Text("Title", style: TextStyle(fontSize: 17)), placeholder: "Required"),
+                    CupertinoTextFormFieldRow(controller: u, prefix: const Text("Username", style: TextStyle(fontSize: 17)), placeholder: "Optional"),
                   ],
                 ),
                 CupertinoFormSection.insetGrouped(
@@ -638,8 +747,8 @@ class _FormModalState extends State<_FormModal> {
                   children: [
                     CupertinoTextFormFieldRow(
                       controller: s, 
-                      prefix: const Text("Rahsia", style: TextStyle(fontSize: 17)), 
-                      placeholder: "Wajib",
+                      prefix: const Text("Secret", style: TextStyle(fontSize: 17)), 
+                      placeholder: "Required",
                       obscureText: false,
                     ),
                   ],
@@ -647,15 +756,19 @@ class _FormModalState extends State<_FormModal> {
                 if (widget.item != null) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: CupertinoButton(
-                      color: AppTheme.secondarySystemBackground,
-                      borderRadius: BorderRadius.circular(10),
-                      onPressed: () {
+                    child: TouchButton(
+                      baseColor: AppTheme.secondarySystemBackground,
+                      highlightColor: AppTheme.tertiarySystemBackground,
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
                         (widget.state.vault?['items'] as List).remove(widget.item);
                         widget.state.save();
                         Navigator.pop(context);
                       },
-                      child: const Text("Padam Item", style: TextStyle(color: CupertinoColors.systemRed, fontSize: 17)),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        child: Text("Delete Item", style: TextStyle(color: CupertinoColors.systemRed, fontSize: 17, fontWeight: FontWeight.w500)),
+                      ),
                     ),
                   )
                 ]
@@ -669,20 +782,59 @@ class _FormModalState extends State<_FormModal> {
 
   Widget _tBtn(String l, String v) => Padding(
     padding: const EdgeInsets.only(right: 8),
-    child: CupertinoButton(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      color: type == v ? AppTheme.primary : AppTheme.secondarySystemBackground,
-      borderRadius: BorderRadius.circular(16),
-      minSize: 0,
-      onPressed: () => setState(() => type = v),
-      child: Text(l, style: TextStyle(fontSize: 13, color: type == v ? Colors.white : AppTheme.textSecondary)),
+    child: TouchButton(
+      baseColor: type == v ? AppTheme.primary : AppTheme.secondarySystemBackground,
+      highlightColor: AppTheme.tertiarySystemBackground,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => type = v);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(l, style: TextStyle(fontSize: 13, color: type == v ? Colors.white : AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+      ),
     ),
   );
 }
 
-class SettingsView extends StatelessWidget {
+// ==========================================
+// 8. SETTINGS & EASTER EGG
+// ==========================================
+class SettingsView extends StatefulWidget {
   final VaultState state;
   const SettingsView({super.key, required this.state});
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  int _easterEggCounter = 0;
+
+  void _triggerEasterEgg() {
+    _easterEggCounter++;
+    if (_easterEggCounter == 5) {
+      _easterEggCounter = 0;
+      HapticFeedback.heavyImpact();
+      showCupertinoDialog(
+        context: context,
+        builder: (ctx) => CupertinoAlertDialog(
+          title: const Text("🎉 You found a Secret!"),
+          content: const Text("\nAlways remember to keep your VaultX PIN safe. There is no recovery button here. \n\nStay secure, friend!"),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Awesome"),
+            ),
+          ],
+        )
+      );
+    } else {
+      HapticFeedback.lightImpact();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -690,7 +842,7 @@ class SettingsView extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           const CupertinoSliverNavigationBar(
-            largeTitle: Text("Tetapan"),
+            largeTitle: Text("Settings"),
             backgroundColor: AppTheme.systemBackground,
             border: null,
           ),
@@ -704,7 +856,7 @@ class SettingsView extends StatelessWidget {
                   children: [
                     _row(CupertinoIcons.paperplane_fill, "Telegram", "@Vann759", "https://t.me/Vann759", CupertinoColors.systemBlue),
                     _row(CupertinoIcons.chevron_left_slash_chevron_right, "GitHub", "Elvandito", "https://github.com/Elvandito", CupertinoColors.black),
-                    _row(CupertinoIcons.mail_solid, "E-mel", "ditoelvan2@gmail.com", "mailto:ditoelvan2@gmail.com", CupertinoColors.systemRed),
+                    _row(CupertinoIcons.mail_solid, "Email", "ditoelvan2@gmail.com", "mailto:ditoelvan2@gmail.com", CupertinoColors.systemRed),
                   ],
                 ),
                 CupertinoListSection.insetGrouped(
@@ -713,22 +865,43 @@ class SettingsView extends StatelessWidget {
                   children: [
                     CupertinoListTile(
                       leading: _iconBg(CupertinoIcons.lock_fill, AppTheme.textSecondary),
-                      title: const Text("Kunci Peti Besi", style: TextStyle(color: Colors.white)),
-                      onTap: state.logout,
+                      title: const Text("Lock Vault", style: TextStyle(color: Colors.white)),
+                      onTap: widget.state.logout,
                     ),
                     CupertinoListTile(
                       leading: _iconBg(CupertinoIcons.trash_fill, CupertinoColors.systemRed),
-                      title: const Text("Padam Semua Data", style: TextStyle(color: CupertinoColors.systemRed)),
+                      title: const Text("Erase All Data", style: TextStyle(color: CupertinoColors.systemRed)),
                       onTap: () async {
-                        final p = await SharedPreferences.getInstance();
-                        await p.clear();
-                        state.logout();
+                        HapticFeedback.heavyImpact();
+                        showCupertinoDialog(
+                          context: context, 
+                          builder: (ctx) => CupertinoAlertDialog(
+                            title: const Text("Are you sure?"),
+                            content: const Text("This will permanently delete all your data. This action cannot be undone."),
+                            actions: [
+                              CupertinoDialogAction(child: const Text("Cancel"), onPressed: () => Navigator.pop(ctx)),
+                              CupertinoDialogAction(
+                                isDestructiveAction: true,
+                                child: const Text("Erase Data"), 
+                                onPressed: () async {
+                                  final p = await SharedPreferences.getInstance();
+                                  await p.clear();
+                                  widget.state.logout();
+                                  Navigator.pop(ctx);
+                                }
+                              ),
+                            ]
+                          )
+                        );
                       },
                     ),
                   ],
                 ),
                 const SizedBox(height: 40),
-                const Text("VaultX v1.4.0", style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                GestureDetector(
+                  onTap: _triggerEasterEgg,
+                  child: const Text("VaultX v1.5.0", style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 0.5)),
+                ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -749,6 +922,9 @@ class SettingsView extends StatelessWidget {
     title: Text(l, style: const TextStyle(color: Colors.white)),
     additionalInfo: Text(v),
     trailing: const Icon(CupertinoIcons.chevron_right, size: 14, color: AppTheme.textSecondary),
-    onTap: () => launchUrl(Uri.parse(u)),
+    onTap: () {
+      HapticFeedback.lightImpact();
+      launchUrl(Uri.parse(u));
+    },
   );
 }
