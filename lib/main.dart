@@ -40,7 +40,6 @@ class CryptoService {
   static const String _storageKey = "encrypted_vault";
   static final _algorithm = AesGcm.with256bits();
 
-  // Derivasi kunci menggunakan PBKDF2 (100k iterasi)
   static Future<SecretKey> deriveKey(String password, List<int> salt) async {
     final pbkdf2 = Pbkdf2(
       macAlgorithm: Hmac.sha256(),
@@ -161,10 +160,12 @@ class _MainGateState extends State<MainGate> {
   void _startAutoLock() {
     _autoLockTimer?.cancel();
     _autoLockTimer = Timer(const Duration(minutes: 3), () {
-      setState(() {
-        _masterPassword = null;
-        _items = [];
-      });
+      if (mounted) {
+        setState(() {
+          _masterPassword = null;
+          _items = [];
+        });
+      }
     });
   }
 
@@ -302,7 +303,6 @@ class _DashboardState extends State<Dashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
             TextField(
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
@@ -314,7 +314,6 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             const SizedBox(height: 20),
-            // Bento Stats
             Row(
               children: [
                 Expanded(
@@ -327,14 +326,13 @@ class _DashboardState extends State<Dashboard> {
               ],
             ),
             const SizedBox(height: 20),
-            // Filter Chips
             SizedBox(
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: ['all', 'password', 'api_key', 'token', 'note'].map((type) {
                   return Padding(
-                    padding: const EdgeInsets.right(8.0),
+                    padding: const EdgeInsets.only(right: 8.0),
                     child: FilterChip(
                       selected: _filter == type,
                       label: Text(type.toUpperCase()),
@@ -345,7 +343,6 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             const SizedBox(height: 20),
-            // Items List
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -397,7 +394,11 @@ class _DashboardState extends State<Dashboard> {
   Widget _buildBentoCard(String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: const Color(0xFF16161E), borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.05))),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16161E), 
+        borderRadius: BorderRadius.circular(24), 
+        border: Border.all(color: Colors.white.withOpacity(0.05))
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
