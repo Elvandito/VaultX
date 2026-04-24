@@ -1,7 +1,6 @@
-name: vaultx
-description: Secure local encryption offline password manager.
-publish_to: 'none'
-version: 1.2.0+1
+name: vault_krypt
+description: Offline Secure Credential Manager
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -9,14 +8,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
+  cryptography: ^2.5.0
   shared_preferences: ^2.2.2
-  cryptography: ^2.7.0
-  qr_flutter: ^4.1.0
-  screenshot: ^2.3.0
-  share_plus: ^7.1.0
-  path_provider: ^2.1.1
-  url_launcher: ^6.2.5
+  uuid: ^4.2.1
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
