@@ -24,6 +24,12 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
+      # STEP BARU: Memperbaiki folder Android yang korup/hilang resource-nya
+      - name: Repair Android Project Structure
+        run: |
+          rm -rf android/
+          flutter create --platforms android --org com.elvandito .
+
       - name: Install dependencies
         run: flutter pub get
 
