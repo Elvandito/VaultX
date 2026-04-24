@@ -1,4 +1,4 @@
-name: Build VaultX (Artifact Only)
+name: Build Android APK
 
 on:
   push:
@@ -7,52 +7,31 @@ on:
 
 jobs:
   build:
-    name: Build APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.0'
           channel: 'stable'
-          cache: true
 
-      - name: Create local.properties
-        run: |
-          ANDROID_PATH=$(find . -name "android" -type d -not -path "*/.*" | head -n 1)
-          echo "flutter.sdk=$FLUTTER_ROOT" > "$ANDROID_PATH/local.properties"
-        shell: bash
+      - name: Install dependencies
+        run: flutter pub get
 
-      - name: Install Dependencies
-        run: |
-          WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
-          cd "$WORKDIR"
-          flutter pub get
+      - name: Build APK
+        run: flutter build apk --release
 
-      - name: Build Release APK
-        run: |
-          WORKDIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
-          cd "$WORKDIR"
-          # Retry loop for networking issues
-          for i in {1..3}; do
-            flutter build apk --release --no-tree-shake-icons && break || sleep 15;
-          done
-
-      - name: Upload APK Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VaultX-Build
-          path: "**/build/app/outputs/flutter-apk/app-release.apk"
-          if-no-files-found: error
-          retention-days: 5
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
