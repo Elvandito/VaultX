@@ -1,8 +1,9 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application
-        android:label="VaultX"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.elvandito.vaultx">
+   <application
+        android:label="VaultKrypt"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"> <!-- Pastikan ini @mipmap -->
+        android:icon="@android:drawable/ic_lock_lock"> <!-- Fallback to system icon to avoid mipmap error -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -16,8 +17,8 @@
               android:resource="@style/NormalTheme"
               />
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android:intent.action.MAIN"/>
+                <category android:name="android:intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <meta-data
